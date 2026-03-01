@@ -5,6 +5,7 @@
 
 float sonarDeltaTime = 0.0;
 float sonarTickStart = 0.0;
+
 static int sonarReading = 0;
 
 void initSonar() {
@@ -12,8 +13,6 @@ void initSonar() {
 }
 
 int updateSonar(NewPing *pSonar) {
-
-
     sonarDeltaTime = toSec(micros()) - sonarTickStart;
 
     if (sonarDeltaTime > SONAR_RATE) {
