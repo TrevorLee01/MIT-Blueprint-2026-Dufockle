@@ -1,11 +1,14 @@
 #pragma once
 
-#define SERVOLRPIN 6
-#define SERVOUDPIN 7
+
+// #define SERVOLRPIN 6
+// #define SERVOUDPIN 7
+
 #define JOYSTICK_X A1
 #define JOYSTICK_Y A2
 #define PUSH_BUTTON 8
 
+//Oled was having issues bruh
 // OLED
 #define OLED_ADDR 0x3C
 #define OLED_WIRE &Wire
@@ -16,8 +19,8 @@
 
 
 //Sonar
-#define SONAR_ECHO 12
-#define SONAR_TRIG 13
+#define SONAR_ECHO 6
+#define SONAR_TRIG 7
 #define SONAR_DISTANCE 350
 #define SONAR_RATE (20/1000.00)
 
@@ -34,8 +37,6 @@
 #define UD_4 9
 
 
-enum STATES {
-    SETUP = -1,
+//Buzzer
 
-    
-};
+#define BUZZER 42

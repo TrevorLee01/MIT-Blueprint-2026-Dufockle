@@ -3,20 +3,20 @@
 #include <NewPing.h>
 #include <Servo.h> 
 #include "config.hpp"
-#include "screen.hpp"
+
 #include "helper.hpp"
 #include "sonar.hpp"
-#include "servo.hpp"
+
 
 void readJoyStick(int pinX, int pinY, int *outputX, int *outputY);
 void limitAngle(int *angle);
+void moveServo(int *step, int rate, int PIN_1, int PIN_2, int PIN_3, int PIN_4);
 //Objects and stuff
 
 // Adafruit_SSD1306 OLED(OLED_WIDTH, OLED_HEIGHT, OLED_WIRE, OLED_RESET);
 NewPing SONAR(SONAR_TRIG, SONAR_ECHO, SONAR_DISTANCE);
 
-Servo SERVOLR;
-Servo SERVOUD;
+
 
 int stepLR = 0;
 int stepUD = 0;
@@ -31,6 +31,8 @@ float servoDeltaTime = 0.0;
 float servoTickStart = 0.0;
 
 
+int distance = 0;
+
 void setup() {
   // pinMode(SERVOLRPIN, OUTPUT);
   // pinMode(SERVOUDPIN, OUTPUT);
@@ -38,6 +40,8 @@ void setup() {
   pinMode(JOYSTICK_X, INPUT);
   pinMode(JOYSTICK_Y, INPUT);
   pinMode(PUSH_BUTTON, INPUT);
+
+  pinMode(BUZZER, OUTPUT);
 
   pinMode(LR_1, OUTPUT);
   pinMode(LR_2, OUTPUT);
@@ -55,20 +59,28 @@ void setup() {
   Serial.print("Starting");
   Wire.begin();
   Wire.setClock(400000);
-  SPI.begin();
 
   //Start 
   // initOLED(&OLED);
   initSonar();
 
-  SERVOLR.attach(SERVOLRPIN);
-  SERVOUD.attach(SERVOUDPIN);
+  // SERVOLR.attach(SERVOLRPIN);
+  // SERVOUD.attach(SERVOUDPIN);
 
   servoTickStart = toSec(micros());
 }
 
 void loop() {
   servoDeltaTime = toSec(micros()) - servoTickStart;
+  distance = updateSonar(&SONAR);
+
+  if (distance < 20 && distance > 1) {
+    beep();
+    delay((1/distance) * 10);
+  } else {
+    digitalWrite(BUZZER, LOW);
+  }
+
   if (servoDeltaTime > 0.01) {
     servoTickStart = toSec(micros());
     readJoyStick(JOYSTICK_X, JOYSTICK_Y, &rateLR, &rateUD);
@@ -79,22 +91,20 @@ void loop() {
     limitAngle(&angleUD);
   }
 
-  Serial.print("X: ");
-  Serial.println(angleLR);
+  // Serial.print("X: ");
+  // Serial.println(angleLR);
 
-  Serial.print("Y: ");
-  Serial.println(angleUD);
-
-  SERVOLR.write(angleLR);
-  SERVOUD.write(angleUD);
+  // Serial.print("Y: ");
+  // Serial.println(angleUD);
 
   // Move LR
-  moveServo(stepLR, rateLR, LR_1, LR_2, LR_3, LR_4);
-
+  moveStepper(&stepLR, rateLR, LR_1, LR_2, LR_3, LR_4);
   //Move UD
-  moveServo(stepUD, rateUD, LR_1, LR_2, LR_3, LR_4);
+  moveStepper(&stepUD, rateUD, UD_1, UD_2, UD_3, UD_4);
 
-  delay(2);
+
+  delay(1);
+
 }
 
 
@@ -119,9 +129,9 @@ void limitAngle(int *angle) {
 
 }
 
-void moveServo(int step, int rate, int PIN_1, int PIN_2, int PIN_3, int PIN_4) {
-  if (rate < 0) {
-    switch (step) {
+void moveStepper(int *step, int rate, int PIN_1, int PIN_2, int PIN_3, int PIN_4) {
+  if (rate < -1) {
+    switch (*step) {
       case 0:
         digitalWrite(PIN_1, HIGH);
         digitalWrite(PIN_2, LOW);
@@ -146,11 +156,11 @@ void moveServo(int step, int rate, int PIN_1, int PIN_2, int PIN_3, int PIN_4) {
         digitalWrite(PIN_3, LOW);
         digitalWrite(PIN_4, HIGH);
       break;
-    } 
-    step++;
+    }
+    *step += 1;
   }
-  if (rate > 0) {
-    switch (step) {
+  if (rate > 1) {
+    switch (*step) {
       case 0:
         digitalWrite(PIN_1, LOW);
         digitalWrite(PIN_2, LOW);
@@ -176,11 +186,11 @@ void moveServo(int step, int rate, int PIN_1, int PIN_2, int PIN_3, int PIN_4) {
         digitalWrite(PIN_4, LOW);
         break;
     }
-    step++;
+    *step += 1;
   }
 
-  if (step >= 4) {
-    step = 0;
+  if (*step >= 4) {
+    *step = 0;
   }
 
 }

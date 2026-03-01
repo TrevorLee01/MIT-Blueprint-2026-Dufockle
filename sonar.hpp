@@ -5,4 +5,4 @@
 
 void initSonar();
 
-float updateSonar(NewPing *pSonar);
+int updateSonar(NewPing *pSonar);

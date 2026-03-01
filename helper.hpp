@@ -4,3 +4,4 @@
 
 float toSec(float micros);
 
+void beep();

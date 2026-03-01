@@ -17,6 +17,8 @@ int updateSonar(NewPing *pSonar) {
 
     if (sonarDeltaTime > SONAR_RATE) {
         sonarReading = pSonar->ping_cm();
+
     }
+    Serial.println(sonarReading);
     return sonarReading;
 }
